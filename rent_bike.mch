@@ -1,7 +1,14 @@
 MACHINE rent_bike
 SETS
 	USER;
-	BIKE
+	BIKE;
+	COUPOM
+	
+CONSTANTS coupons
+    
+PROPERTIES coupons : USER <-> COUPOM 
+		  & dom(coupons) = USER
+		  & ran(coupons) = COUPOM
 
 VARIABLES 
 	/* USER */ 
@@ -9,11 +16,11 @@ VARIABLES
 	/* BIKE */ 
 	bikes, rentedBikes,
 	/* CREDITS */ 
-	
+	credits,
 	/* SALES */
-	bikesSales, discount
-   /* COUPON */
-   
+	bikesSales,
+   	/* COUPON */
+   	userCoupom
 	
 INVARIANT
 	/* USER */ 
@@ -21,12 +28,13 @@ INVARIANT
 	/* BIKE */ 
 	bikes <: BIKE &
 	rentedBikes : USER >+> BIKE &
-	/* SALES */ 
-	discount <: 1 .. 6 &
-	bikesSales : bikes <-> discount
 	/* CREDITS */ 
+	credits : USER --> 0..100 &
+	/* SALES */ 
+	bikesSales : bikes --> 1..4 &
 	/* COUPON */
-
+	userCoupom : USER <-> COUPOM
+   
 INITIALISATION 
 	/* USER */
 	users := {} ||
@@ -34,10 +42,12 @@ INITIALISATION
 	/* BIKE */ 
 	bikes := {} ||
 	rentedBikes := {} ||
+	/* CREDITS */
+	credits := {} ||
 	/* SALES */ 
 	bikesSales := {} ||
-	discount := {} 
 	/* COUPON */
+	userCoupom := {}
 	
 
 OPERATIONS
@@ -67,6 +77,20 @@ OPERATIONS
         END
     END;
 
+/*========== CREDITS ==============*/ 
+addCredits(uu,cc)=
+	PRE 
+	uu : USER &
+	cc   : 6 .. 100 &
+	uu : users or uu : superusers
+	THEN
+	IF uu : dom(credits)
+	THEN  credits := {uu} <<| credits  <+  credits \/ { uu  |-> cc }
+	ELSE credits := credits \/ { uu  |-> cc}
+	END
+	END;
+	
+
 
  /*========== RENT BIKE ============== */ 
   rentBike(uu,bb) = 
@@ -78,11 +102,11 @@ OPERATIONS
 	THEN  rentedBikes := rentedBikes \/ { uu  |-> bb}
 	END;
 
- /*========== CREATE SALE ============== one prof obligation pedding */ 
+ /*========== CREATE SALE ============== */ 
 createSale(uu,bb,disc) =
 	PRE uu :  superusers
 	& bb : bikes
-	& disc : 1 .. 6
+	& disc : 1 .. 4
 	& bb /: dom(bikesSales)
 	THEN bikesSales := bikesSales  \/ { bb  |-> disc}
 	END
