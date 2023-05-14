@@ -7,19 +7,37 @@ VARIABLES
 	/* USER */ 
 	users, superusers,
 	/* BIKE */ 
-	bikes
+	bikes, rentedBikes,
+	/* CREDITS */ 
+	
+	/* SALES */
+	bikesSales, discount
+   /* COUPON */
+   
 	
 INVARIANT
 	/* USER */ 
  	superusers <: USER & users <:  USER &
 	/* BIKE */ 
-	bikes <: BIKE
+	bikes <: BIKE &
+	rentedBikes : USER >+> BIKE &
+	/* SALES */ 
+	discount <: 1 .. 6 &
+	bikesSales : bikes <-> discount
+	/* CREDITS */ 
+	/* COUPON */
 
 INITIALISATION 
 	/* USER */
 	users := {} ||
 	superusers := {} ||
-	bikes := {}
+	/* BIKE */ 
+	bikes := {} ||
+	rentedBikes := {} ||
+	/* SALES */ 
+	bikesSales := {} ||
+	discount := {} 
+	/* COUPON */
 	
 
 OPERATIONS
@@ -29,7 +47,7 @@ OPERATIONS
   addNewSuperUser(suu) = PRE suu : USER & suu /: superusers THEN superusers := superusers \/ {suu} END;
   
   removeUser(ud) = 
-	PRE ud : USER
+	PRE ud : USER & ( ud :users or ud : superusers)
 	THEN 
 		IF ud :users 
 		THEN users := users - {ud} 
@@ -39,13 +57,39 @@ OPERATIONS
 	END;
 
  /*========== BIKE ============== */ 
-  addNewBike(bb) = PRE bb: BIKE & bb /: bikes THEN bikes := bikes \/ {bb} END;
+  addNewBike(bb,uu) = PRE bb: BIKE & bb /: bikes & uu : superusers THEN bikes := bikes \/ {bb} END;
 
-  removeBike(rbb) = PRE rbb: BIKE & rbb : bikes THEN bikes := bikes - {rbb} END
+  removeBike(rbb,uu) = PRE rbb: BIKE & rbb : bikes & uu : superusers & uu : USER & rbb /: ran(rentedBikes)
+    THEN 
+        IF rbb : dom(bikesSales)
+        THEN bikesSales,bikes :=  {rbb} <<| bikesSales, bikes - {rbb}
+        ELSE bikes := bikes - {rbb}
+        END
+    END;
 
 
  /*========== RENT BIKE ============== */ 
+  rentBike(uu,bb) = 
+	PRE uu : USER & uu : users 
+	& bb : BIKE & bb : bikes 
+	& (uu,bb) /: rentedBikes
+	& uu /: dom(rentedBikes)
+	& bb /: ran(rentedBikes)
+	THEN  rentedBikes := rentedBikes \/ { uu  |-> bb}
+	END;
+
+ /*========== CREATE SALE ============== one prof obligation pedding */ 
+createSale(uu,bb,disc) =
+	PRE uu :  superusers
+	& bb : bikes
+	& disc : 1 .. 6
+	& bb /: dom(bikesSales)
+	THEN bikesSales := bikesSales  \/ { bb  |-> disc}
+	END
+
+/*========== CREATE COUPON ==============*/ 
 
 
 END
+
 
