@@ -19,8 +19,8 @@ VARIABLES
 	credits,
 	/* SALES */
 	bikesSales,
-   	/* COUPON */
-   	userCoupom
+	/* COUPON */
+	userCoupom
 	
 INVARIANT
 	/* USER */ 
@@ -112,9 +112,27 @@ createSale(uu,bb,disc) =
 	& disc : 1 .. 4
 	& bb /: dom(bikesSales)
 	THEN bikesSales := bikesSales  \/ { bb  |-> disc}
-	END
+	END;
 
 /*========== CREATE COUPON ==============*/ 
+        
+
+/*========== RENT BIKE WITH SALE ==============*/
+
+
+/*========== RENT BIKE WITH COUPOM ==============*/
+
+/*========== RETURN BIKE ==============*/
+returnBike(uu,bb)=
+    PRE uu : USER &
+        uu : dom(rentedBikes) &
+        bb : bikes &
+        (uu,bb) : rentedBikes 
+    THEN rentedBikes := rentedBikes - {uu |-> bb}
+    END
+
+/*========== RENT WITH LOYALTY ==============*/
+
 
 
 END
