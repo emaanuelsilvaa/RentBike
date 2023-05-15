@@ -29,7 +29,7 @@ INVARIANT
 	bikes <: BIKE &
 	rentedBikes : USER >+> BIKE &
 	/* CREDITS */ 
-	credits : USER --> 0..100 &
+	credits : USER +-> 6..100 &
 	/* SALES */ 
 	bikesSales : bikes --> 1..4 &
 	/* COUPON */
@@ -80,13 +80,15 @@ OPERATIONS
 /*========== CREDITS ==============*/ 
 addCredits(uu,cc)=
 	PRE 
-	uu : USER &
-	cc   : 6 .. 100 &
-	uu : users or uu : superusers
+	uu : users &
+	cc : NAT &
+	(cc   : 6 .. 6 or cc : 12 .. 12 )
+	
 	THEN
-	IF uu : dom(credits)
-	THEN  credits := {uu} <<| credits  <+  credits \/ { uu  |-> cc }
-	ELSE credits := credits \/ { uu  |-> cc}
+	IF uu : dom(credits)  &  cc+credits(uu) < 100
+	THEN  credits := credits  <+ { uu  |-> cc+credits(uu)}
+	ELSIF uu /: dom(credits)
+	THEN credits := credits \/ { uu  |-> cc}
 	END
 	END;
 	
@@ -95,11 +97,12 @@ addCredits(uu,cc)=
  /*========== RENT BIKE ============== */ 
   rentBike(uu,bb) = 
 	PRE uu : USER & uu : users 
+	& uu :  dom(credits) & credits(uu) >= 6
 	& bb : BIKE & bb : bikes 
 	& (uu,bb) /: rentedBikes
 	& uu /: dom(rentedBikes)
 	& bb /: ran(rentedBikes)
-	THEN  rentedBikes := rentedBikes \/ { uu  |-> bb}
+	THEN  rentedBikes := rentedBikes \/ { uu  |-> bb} || credits := credits  <+ { uu  |-> credits(uu)-6}
 	END;
 
  /*========== CREATE SALE ============== */ 
@@ -115,5 +118,7 @@ createSale(uu,bb,disc) =
 
 
 END
+
+
 
 
