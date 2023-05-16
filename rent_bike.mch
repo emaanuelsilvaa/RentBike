@@ -131,12 +131,10 @@ createSale(uu,bb,disc) =
 	& bb /: ran(rentedBikes)
 	THEN bikesSales := bikesSales  \/ { bb  |-> disc}
 	END;
-
-/*========== CREATE COUPON ==============*/ 
-        
-
+	
 /*========== RENT BIKE WITH SALE ==============*/
 
+/*========== CREATE COUPON ==============*/ 
 
 /*========== RENT BIKE WITH COUPOM ==============*/
 
@@ -158,7 +156,7 @@ rentBikeWithLoyalty(uu,bb)=
         & bb : BIKE & bb : bikes
         & bb /: ran(rentedBikes)
         & bb /: dom(bikesSales)
-    THEN rentedBikes := rentedBikes \/ { uu  |-> bb}
+    THEN rentedBikes := rentedBikes \/ { uu  |-> bb} || loyalty := loyalty  <+ { uu  |-> 0}
         END
 
 END
