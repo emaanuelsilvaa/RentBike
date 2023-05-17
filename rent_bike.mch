@@ -1,15 +1,8 @@
 MACHINE rent_bike
 SETS
 	USER;
-	BIKE;
-	COUPOM
+	BIKE
 	
-CONSTANTS coupons
-    
-PROPERTIES coupons : USER <-> COUPOM 
-		  & dom(coupons) = USER
-		  & ran(coupons) = COUPOM
-
 VARIABLES 
 	/* USER */ 
 	users, superusers,
@@ -20,7 +13,7 @@ VARIABLES
 	/* SALES */
 	bikesSales,
 	/* COUPON */
-	userCoupom,
+	
 	/* LOYALTY */
 	loyalty
 	
@@ -35,7 +28,7 @@ INVARIANT
 	/* SALES */ 
 	bikesSales : bikes +-> 1..4 &
 	/* COUPON */
-	userCoupom : USER <-> COUPOM &
+	
 	/* LOYALTY */
 	loyalty : USER +-> 0..4
    
@@ -51,7 +44,7 @@ INITIALISATION
 	/* SALES */ 
 	bikesSales := {} ||
 	/* COUPON */
-	userCoupom := {} ||
+	
 	/* LOYALTY */
 	loyalty := {}
 
@@ -133,7 +126,21 @@ createSale(uu,bb,disc) =
 	END;
 	
 /*========== RENT BIKE WITH SALE ==============*/
-
+rentBikeWithSale(uu,bb)=
+    PRE uu : USER & ( uu : users or uu : superusers) &
+        uu :  dom(credits) &
+        uu : dom(loyalty) &
+        loyalty(uu) < 4 &
+        uu /: dom(rentedBikes) &
+        bb : BIKE & bb : bikes &
+	    bb /: ran(rentedBikes) &
+        bb : dom(bikesSales) &
+        (uu,bb) /: rentedBikes &
+        credits(uu) >= bikesSales(bb) 
+        THEN rentedBikes := rentedBikes \/ { uu  |-> bb} || credits := credits  <+ { uu  |-> credits(uu)-bikesSales(bb)}
+    || loyalty := loyalty  <+ { uu  |-> loyalty(uu)+1}
+        END;
+        
 /*========== CREATE COUPON ==============*/ 
 
 /*========== RENT BIKE WITH COUPOM ==============*/
@@ -160,6 +167,7 @@ rentBikeWithLoyalty(uu,bb)=
         END
 
 END
+
 
 
 
