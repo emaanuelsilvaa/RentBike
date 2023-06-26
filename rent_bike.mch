@@ -1,171 +1,179 @@
-MACHINE rent_bike
+MACHINE 
+    rent_bike
+    
+CONSTANTS
+    credit_limit, rent_value, max_discount, max_fidelity, max_damage
+    
+PROPERTIES
+    credit_limit : NAT 
+    & rent_value : NAT1
+    & max_discount : NAT1
+    & max_fidelity : NAT
+    & max_damage : NAT
+    
 SETS
-	USER;
-	BIKE
-	
-VARIABLES 
-	/* USER */ 
-	users, superusers,
-	/* BIKE */ 
-	bikes, rentedBikes,
-	/* CREDITS */ 
-	credits,
-	/* SALES */
-	bikesSales,
-	/* COUPON */
-	
-	/* LOYALTY */
-	loyalty
-	
-INVARIANT
-	/* USER */ 
- 	superusers <: USER & users <:  USER &
-	/* BIKE */ 
-	bikes <: BIKE &
-	rentedBikes : USER +-> BIKE &
-	/* CREDITS */ 
-	credits : USER +-> 0..100 &
-	/* SALES */ 
-	bikesSales : bikes +-> 1..4 &
-	/* COUPON */
-	
-	/* LOYALTY */
-	loyalty : USER +-> 0..4
-   
-INITIALISATION 
-	/* USER */
-	users := {} ||
-	superusers := {} ||
-	/* BIKE */ 
-	bikes := {} ||
-	rentedBikes := {} ||
-	/* CREDITS */
-	credits := {} ||
-	/* SALES */ 
-	bikesSales := {} ||
-	/* COUPON */
-	
-	/* LOYALTY */
-	loyalty := {}
-
-OPERATIONS
-  /*========== USER ============== */ 
-  addNewUser(uu) = 
-  PRE uu: USER 
-      & uu /: users
-      & uu /: dom(loyalty)
-  THEN users := users \/ {uu} || loyalty := loyalty \/ { uu  |-> 0} END;
-  
-  addNewSuperUser(suu) = 
-  PRE suu : USER 
-      & suu /: superusers
-      & suu /: dom(loyalty)
-  THEN superusers := superusers \/ {suu} || loyalty := loyalty \/ { suu  |-> 0} END;
-  
-  removeUser(ud) = 
-	PRE ud : USER & ( ud :users or ud : superusers)
-	THEN 
-		IF ud :users 
-		THEN users := users - {ud} 
-		ELSIF ud : superusers 
-		THEN superusers := superusers - {ud} 
-		END 
-	END;
-
- /*========== BIKE ============== */ 
-  addNewBike(bb,uu) = PRE bb: BIKE & bb /: bikes & uu : superusers THEN bikes := bikes \/ {bb} END;
-
-  removeBike(rbb,uu) = PRE rbb: BIKE & rbb : bikes & uu : superusers & uu : USER & rbb /: ran(rentedBikes)
-    THEN 
-        IF rbb : dom(bikesSales)
-        THEN bikesSales,bikes :=  {rbb} <<| bikesSales, bikes - {rbb}
-        ELSE bikes := bikes - {rbb}
-        END
-    END;
-
-/*========== CREDITS ==============*/ 
-addCredits(uu,cc)=
-	PRE 
-	uu : USER &
-	( uu : users or uu : superusers) &
-	cc : 6 .. 100 &
-	(cc   : 6 .. 6 or cc : 12 .. 12 )
-	
-	THEN
-	IF uu : dom(credits)  &  cc+credits(uu) < 100
-	THEN  credits := credits  <+ { uu  |-> cc+credits(uu)}
-	ELSIF uu /: dom(credits)
-	THEN credits := credits \/ { uu  |-> cc}
-	END
-	END;
-
- /*========== RENT BIKE ============== */ 
-  rentBike(uu,bb) = 
-	PRE uu : USER & ( uu : users or uu : superusers) 
-	& uu :  dom(credits) 
-	& credits(uu) >= 6
-	& bb : BIKE & bb : bikes 
-	& (uu,bb) /: rentedBikes
-	& bb /: dom(bikesSales)
-	& uu /: dom(rentedBikes)
-	& bb /: ran(rentedBikes)
-	& uu : dom(loyalty) 
-	& loyalty(uu) < 4
-    THEN  rentedBikes := rentedBikes \/ { uu  |-> bb} || credits := credits  <+ { uu  |-> credits(uu)-6}
-    || loyalty := loyalty  <+ { uu  |-> loyalty(uu)+1}
-	END;
-
- /*========== CREATE SALE ============== */ 
-createSale(uu,bb,disc) =
-	PRE uu :  superusers
-	& bb : bikes
-	& disc : 1 .. 4
-	& bb /: dom(bikesSales)
-	& bb /: ran(rentedBikes)
-	THEN bikesSales := bikesSales  \/ { bb  |-> disc}
-	END;
-	
-/*========== RENT BIKE WITH SALE ==============*/
-rentBikeWithSale(uu,bb)=
-    PRE uu : USER & ( uu : users or uu : superusers) &
-        uu :  dom(credits) &
-        uu : dom(loyalty) &
-        loyalty(uu) < 4 &
-        uu /: dom(rentedBikes) &
-        bb : BIKE & bb : bikes &
-	    bb /: ran(rentedBikes) &
-        bb : dom(bikesSales) &
-        (uu,bb) /: rentedBikes &
-        credits(uu) >= bikesSales(bb) 
-        THEN rentedBikes := rentedBikes \/ { uu  |-> bb} || credits := credits  <+ { uu  |-> credits(uu)-bikesSales(bb)}
-    || loyalty := loyalty  <+ { uu  |-> loyalty(uu)+1}
-        END;
+    USERS;
+    BIKES
         
-/*========== CREATE COUPON ==============*/ 
-
-/*========== RENT BIKE WITH COUPOM ==============*/
-
-/*========== RETURN BIKE ==============*/
-returnBike(uu,bb)=
-    PRE uu : USER &
-        uu : dom(rentedBikes) &
-        bb : bikes &
-        (uu,bb) : rentedBikes 
-    THEN rentedBikes := rentedBikes - {uu |-> bb}
+VARIABLES 
+    users, bikes, rentedBikes,	credits, bikeDiscounts, fidelity, bikeDamages
+    
+INVARIANT
+    users <: USERS
+    & bikes <: BIKES
+    & rentedBikes : USERS >+> BIKES
+    & credits : USERS +-> 0..100
+    & bikeDiscounts : bikes --> 0..4 // substituir por 0..4
+    & fidelity : USERS +-> 0..4
+    & bikeDamages : bikes --> 0..100
+    
+INITIALISATION 
+    users := {} || 
+    bikes := {} ||
+    rentedBikes := {} ||
+    credits := {} ||
+    bikeDiscounts := {} ||
+    fidelity := {} ||
+    bikeDamages := {}
+    
+OPERATIONS
+    addUser(uu) = 
+    PRE uu: USERS 
+        & uu /: users 
+        & uu /: dom(fidelity)
+    THEN users := users \/ {uu} 
+        || fidelity := fidelity \/ { uu |-> 0} 
     END;
-
-/*========== RENT WITH LOYALTY ==============*/
-rentBikeWithLoyalty(uu,bb)=
-    PRE uu : USER
-        & uu : dom(loyalty)
-        & uu /: dom(rentedBikes)
-        & loyalty(uu)= 4
-        & bb : BIKE & bb : bikes
+    
+    removeUser(uu) = 
+    PRE uu : USERS & uu /: dom(rentedBikes)
+    THEN users := users - {uu} 
+        || fidelity := {uu} <<| fidelity
+    END;
+    
+    addBike(bb) = 
+    PRE bb : BIKES
+        & bb /: bikes 
+    THEN bikes := bikes \/ {bb}
+    END;
+    
+    removeBike(bb) =
+    PRE bb : BIKES
+        & bb : bikes 
         & bb /: ran(rentedBikes)
-        & bb /: dom(bikesSales)
-    THEN rentedBikes := rentedBikes \/ { uu  |-> bb} || loyalty := loyalty  <+ { uu  |-> 0}
+        & bb /: dom(bikeDamages)
+        & bb /: dom(bikeDiscounts)
+    THEN 
+        IF bb : dom(bikeDiscounts) // rever essa checagem
+        THEN bikeDiscounts, bikes :=  {bb} <<| bikeDiscounts, bikes - {bb}
+        ELSE bikes := bikes - {bb}
         END
-
+    END;
+    
+    addCredit(uu, cc)=
+    PRE uu : USERS
+        & uu : users 
+        & cc : NAT
+        & cc : 1..100
+    THEN
+        IF uu : dom(credits) & cc + credits(uu) <= credit_limit
+        THEN credits := credits  <+ {uu |-> cc + credits(uu)}
+        ELSIF uu /: dom(credits)
+        THEN credits := credits \/ {uu |-> cc}
+        END
+    END;
+    
+    rent(uu, bb) = 
+    PRE uu : users
+        & uu : dom(credits) 
+        & credits(uu) >= 2 * rent_value // so deve ser possivel alugar alguma coisa se tiver 2x o rent_value
+        & bb : bikes 
+        & (uu, bb) /: rentedBikes
+        & bb /: dom(bikeDiscounts)
+        & uu /: dom(rentedBikes)
+        & bb /: ran(rentedBikes)
+        & uu : dom(fidelity) 
+        & fidelity(uu) < max_fidelity
+    THEN  
+        rentedBikes := rentedBikes \/ {uu |-> bb} 
+        || credits := credits  <+ {uu |-> credits(uu) - rent_value}
+        || fidelity := fidelity  <+ {uu |-> fidelity(uu) + 1}
+    END;
+    
+    rentWithDiscount(uu, bb) =
+    PRE uu : users
+        & uu : dom(credits)
+        & uu : dom(fidelity) 
+        & fidelity(uu) < max_fidelity
+        & uu /: dom(rentedBikes) 
+        & bb : bikes 
+        & bb /: ran(rentedBikes)
+        & bb : dom(bikeDiscounts) 
+        & credits(uu) + bikeDiscounts(bb) >= rent_value
+    THEN rentedBikes := rentedBikes \/ {uu |-> bb} 
+        || credits := credits <+ {uu |-> credits(uu) - (rent_value - bikeDiscounts(bb))} 
+        || fidelity := fidelity <+ {uu |-> fidelity(uu) + 1}
+    END;
+    
+    rentWithFidelity(uu, bb) =
+    PRE uu : users
+        & uu : dom(fidelity)
+        & uu /: dom(rentedBikes)
+        & fidelity(uu) = max_fidelity
+        & bb : bikes
+        & bb /: ran(rentedBikes)
+        & bb /: dom(bikeDiscounts)
+    THEN 
+        rentedBikes := rentedBikes \/ {uu  |-> bb} 
+        || fidelity := fidelity <+ {uu |-> 0}
+    END;
+    
+    cd <-- checkDamage(bb) =
+    PRE bb : BIKES
+        & bb : bikes
+        & bb : ran(rentedBikes)
+    THEN
+        IF bb : dom(bikeDamages) 
+        THEN cd := bikeDamages(bb)
+        ELSE
+            ANY 
+                dd 
+            WHERE 
+                dd : 0..100
+            THEN
+                cd := dd || bikeDamages := bikeDamages \/ {bb |-> dd}
+            END
+        END
+    END;
+    
+    return(uu, bb)=
+    PRE uu : users
+        & bb : bikes
+        & (uu, bb) : rentedBikes
+        & bb : dom(bikeDamages)
+        & uu : dom(credits)
+        & credits(uu) > rent_value
+    THEN 
+        IF bikeDamages(bb) < 90
+        THEN 
+            rentedBikes := rentedBikes - {uu |-> bb}
+            || bikeDamages := {bb} <<| bikeDamages
+            || credits := credits <+ {uu |-> credits(uu) - rent_value}
+        ELSE
+            rentedBikes := rentedBikes - {uu |-> bb}
+            || bikeDamages := {bb} <<| bikeDamages
+        END
+    END;
+    
+    createDiscount(bb, disc) =
+    PRE bb : BIKES
+        & bb : bikes
+        & disc : 1 .. 4
+        & bb /: dom(bikeDiscounts)
+        & bb /: ran(rentedBikes)
+    THEN 
+        bikeDiscounts := bikeDiscounts \/ {bb |-> disc}
+    END    
 END
 
 
