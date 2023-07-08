@@ -2,7 +2,7 @@ MACHINE
     rent_bike
     
 CONSTANTS
-    credit_limit, rent_value, max_discount, max_fidelity, max_damage
+    credit_limit, rent_value, max_discount, max_fidelity, max_damage, health_bike
     
 PROPERTIES
     credit_limit : NAT 
@@ -10,6 +10,7 @@ PROPERTIES
     & max_discount : NAT1
     & max_fidelity : NAT
     & max_damage : NAT
+    & health_bike: NAT
     
 SETS
     USERS;
@@ -154,7 +155,7 @@ OPERATIONS
         & uu : dom(credits)
         & credits(uu) > rent_value
     THEN 
-        IF bikeDamages(bb) < 90
+        IF bikeDamages(bb) < health_bike
         THEN 
             rentedBikes := rentedBikes - {uu |-> bb}
             || bikeDamages := {bb} <<| bikeDamages
@@ -183,13 +184,3 @@ OPERATIONS
      END
      
 END
-
-
-
-
-
-
-
-
-
-
