@@ -173,8 +173,17 @@ OPERATIONS
         & bb /: ran(rentedBikes)
     THEN 
         bikeDiscounts := bikeDiscounts \/ {bb |-> disc}
-    END    
+    END;
+    
+     cc <-- getCredits(uu) =
+     PRE uu : users 
+         & uu : dom(credits)
+     THEN
+         cc := credits(uu)
+     END
+     
 END
+
 
 
 
