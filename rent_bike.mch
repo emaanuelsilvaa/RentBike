@@ -84,6 +84,49 @@ OPERATIONS
         END
     END;
     
+    rentBike(uu, bb) = 
+    PRE uu : users
+        & bb : bikes
+        
+    THEN
+        IF 
+            uu : dom(credits)
+            & uu : dom(fidelity)
+            & fidelity(uu) < max_fidelity
+            & uu /: dom(rentedBikes)
+            & bb /: ran(rentedBikes)
+            & bb /: dom(bikeDiscounts)
+            & credits(uu) >= 2 * rent_value // so deve ser possivel alugar alguma coisa se tiver 2x o rent_value
+            & (uu, bb) /: rentedBikes
+        THEN 
+            rentedBikes := rentedBikes \/ {uu |-> bb} 
+            || credits := credits  <+ {uu |-> credits(uu) - rent_value}
+            || fidelity := fidelity  <+ {uu |-> fidelity(uu) + 1} 
+        ELSIF 
+            uu : dom(credits)
+            & uu : dom(fidelity)
+            & fidelity(uu) < max_fidelity
+            & uu /: dom(rentedBikes)
+            & bb /: ran(rentedBikes)
+            & bb : dom(bikeDiscounts)
+            & credits(uu) + bikeDiscounts(bb) >= rent_value
+        THEN 
+            rentedBikes := rentedBikes \/ {uu |-> bb} 
+            || credits := credits <+ {uu |-> credits(uu) - (rent_value - bikeDiscounts(bb))} 
+            || fidelity := fidelity <+ {uu |-> fidelity(uu) + 1}
+        ELSIF 
+            uu : dom(fidelity)
+            & fidelity(uu) = max_fidelity
+            & uu /: dom(rentedBikes)
+            & bb /: ran(rentedBikes)
+            & bb /: dom(bikeDiscounts)
+        THEN
+            rentedBikes := rentedBikes \/ {uu  |-> bb} 
+            || fidelity := fidelity <+ {uu |-> 0}
+        END
+        
+    END;
+    /*
     rent(uu, bb) = 
     PRE uu : users
         & uu : dom(credits) 
@@ -128,6 +171,9 @@ OPERATIONS
         rentedBikes := rentedBikes \/ {uu  |-> bb} 
         || fidelity := fidelity <+ {uu |-> 0}
     END;
+    */
+    
+    
     
     cd <-- checkDamage(bb) =
     PRE bb : BIKES
@@ -184,4 +230,5 @@ OPERATIONS
      END
      
 END
+
 
