@@ -23,10 +23,10 @@ INVARIANT
     users <: USERS
     & bikes <: BIKES
     & rentedBikes : USERS >+> BIKES
-    & credits : USERS +-> 0..100
-    & bikeDiscounts : bikes --> 0..4 // substituir por 0..4
-    & fidelity : USERS +-> 0..4
-    & bikeDamages : bikes --> 0..100
+    & credits : USERS +-> 0.. credit_limit
+    & bikeDiscounts : bikes --> 0.. max_discount
+    & fidelity : USERS +-> 0.. max_fidelity
+    & bikeDamages : bikes --> 0.. max_damage
     
 INITIALISATION 
     users := {} || 
@@ -75,7 +75,7 @@ OPERATIONS
     PRE uu : USERS
         & uu : users 
         & cc : NAT
-        & cc : 1..100
+        & cc : 1.. credit_limit
     THEN
         IF uu : dom(credits) & cc + credits(uu) <= credit_limit
         THEN credits := credits  <+ {uu |-> cc + credits(uu)}
@@ -169,7 +169,7 @@ OPERATIONS
     createDiscount(bb, disc) =
     PRE bb : BIKES
         & bb : bikes
-        & disc : 1 .. 4
+        & disc : 1 .. max_discount
         & bb /: dom(bikeDiscounts)
         & bb /: ran(rentedBikes)
     THEN 
@@ -184,3 +184,4 @@ OPERATIONS
      END
      
 END
+
