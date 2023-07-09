@@ -30,6 +30,8 @@ OPERATIONS
         END;
 
     // TODO: atualizar na machine rent o remover
+    // Podemos chamar essa operation na maquina rent_bike e na maquina rent_bike, chamar em paralelo a remoção da 
+    // lista de bike alugadas. Podemos seguir essa logica para as outras operações que "dependem" da maquina rent bike.
     remove_bike(bb) =
         PRE bb : bikes 
         THEN 
