@@ -38,11 +38,10 @@ OPERATIONS
         & bb /: dom(bikeDamages)
         & bb /: dom(bikeDiscounts)
     THEN 
-        remove_bike(bb)
-        // IF bb : dom(bikeDiscounts) // rever essa checagem
-        // THEN bikeDiscounts, bikes :=  {bb} <<| bikeDiscounts, bikes - {bb}
-        // ELSE bikes := bikes - {bb}
-        // END
+        IF bb : dom(bikeDiscounts) // rever essa checagem
+        THEN bikeDiscounts, bikes :=  {bb} <<| bikeDiscounts, bikes - {bb}
+        ELSE bikes := bikes - {bb}
+        END
     END;
     
     rentBike(uu, bb) = 
@@ -115,5 +114,3 @@ OPERATIONS
     END
      
 END
-
-
