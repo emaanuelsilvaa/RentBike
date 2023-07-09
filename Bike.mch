@@ -23,38 +23,43 @@ INITIALISATION
     || bikesHelth := {}
     
 OPERATIONS
-    add_bike(bb) = 
-        PRE bb : BIKES & bb /: bikes 
+    create_bike(bb) = 
+        PRE bb : BIKES 
+            & bb /: bikes 
+            & bb /: dom(bikesHelth)
         THEN bikes := bikes \/ {bb}
             || bikesHelth := bikesHelth \/ {bb |-> max_helth}
         END;
 
-    // TODO: atualizar na machine rent o remover
-    // Podemos chamar essa operation na maquina rent_bike e na maquina rent_bike, chamar em paralelo a remoção da 
-    // lista de bike alugadas. Podemos seguir essa logica para as outras operações que "dependem" da maquina rent bike.
-    remove_bike(bb) =
+    delete_bike(bb) =
         PRE bb : bikes 
-        THEN 
-            bikes := bikes - {bb}
+        THEN bikes := bikes - {bb} 
             || bikesHelth := {bb} <<| bikesHelth
-        END
+        END;
 
-    // cd <-- checkDamage(bb) =
-    // PRE bb : BIKES
-    //     & bb : bikes
-    //     & bb : ran(rentedBikes)
-    // THEN
-    //     IF bb : dom(bikeDamages) 
-    //     THEN cd := bikeDamages(bb)
-    //     ELSE
-    //         ANY 
-    //             dd 
-    //         WHERE 
-    //             dd : 0..100
-    //         THEN
-    //             cd := dd || bikeDamages := bikeDamages \/ {bb |-> dd}
-    //         END
-    //     END
-    // END
+    reset_helth(bb) =
+        PRE bb : bikes
+            & bb : dom(bikesHelth)
+        THEN bikesHelth(bb) := max_helth
+        END;
+
+    set_damage(bb, dm) =
+        PRE bb : bikes
+            & bb : dom(bikesHelth)
+            & dm : 0..max_helth
+        THEN 
+            IF bikesHelth(bb) - dm < 0
+            THEN bikesHelth(bb) := 0
+            ELSE bikesHelth(bb) := bikesHelth(bb) - dm
+            END
+        END;
+    
+    query_helth <-- get_helth(bb) =
+        PRE 
+            bb : bikes
+            & bb : dom(bikesHelth)
+        THEN
+            query_helth := bikesHelth(bb)
+        END
         
 END
