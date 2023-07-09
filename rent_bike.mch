@@ -5,7 +5,7 @@ INCLUDES
     User, Bike
     
 PROMOTES 
-    create_user, add_credit, get_credits, get_helth
+    create_user, add_credit, get_credits, get_helth, get_fidelity
     
 CONSTANTS
     rent_value, max_discount
@@ -50,35 +50,29 @@ OPERATIONS
         END;
     
     rentBike(uu, bb) = 
-        PRE uu : users & bb : bikes
+        PRE uu : users 
+            & bb : bikes
+            & uu : dom(credits)
+            & uu : dom(fidelities)
+            & uu /: dom(rentedBikes)
+            & bb /: ran(rentedBikes)
         THEN
-            IF uu : dom(credits)
-               & uu : dom(fidelities)
-               & fidelities(uu) < max_fidelity
-               & uu /: dom(rentedBikes)
-               & bb /: ran(rentedBikes)
+            IF fidelities(uu) < max_fidelity
                & bb /: dom(bikeDiscounts)
                & credits(uu) >= 2 * rent_value // so deve ser possivel alugar alguma coisa se tiver 2x o rent_value
-               & (uu, bb) /: rentedBikes
             THEN 
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || rent(uu, rent_value)
             ELSIF 
-                uu : dom(credits)
-                & uu : dom(fidelities)
-                & fidelities(uu) < max_fidelity
-                & uu /: dom(rentedBikes)
-                & bb /: ran(rentedBikes)
+                fidelities(uu) < max_fidelity
+                
                 & bb : dom(bikeDiscounts)
                 & credits(uu) + bikeDiscounts(bb) >= rent_value // TODO: Ajustar essa condicional para respeitar invariant de User
             THEN 
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || rent(uu, rent_value - bikeDiscounts(bb)) 
             ELSIF 
-                uu : dom(fidelities)
-                & fidelities(uu) = max_fidelity
-                & uu /: dom(rentedBikes)
-                & bb /: ran(rentedBikes)
+                fidelities(uu) = max_fidelity
                 & bb /: dom(bikeDiscounts)
             THEN
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
@@ -121,8 +115,15 @@ OPERATIONS
             & bb /: ran(rentedBikes)
         THEN 
             bikeDiscounts(bb) := disc
-        END
+        END;
      
+     rb <-- get_rented_bike(uu) =
+         PRE uu : users
+             & uu : dom(rentedBikes)
+         THEN
+             rb := rentedBikes(uu)
+         END
+         
 END
 
 
