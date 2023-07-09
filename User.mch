@@ -82,7 +82,7 @@ OPERATIONS
         PRE uu : users 
             & uu : dom(credits)
         THEN cc := credits(uu)
-        END;    
+        END;
         
     increment_fidelify(uu) =
         PRE uu : users 
@@ -94,13 +94,6 @@ OPERATIONS
     reset_fidelity(uu) =
         PRE uu : users & uu : dom(fidelities)
         THEN fidelities(uu) := 0
-        END;
-        
-    ff <-- get_fidelity(uu) =
-        PRE uu : users
-            & uu : dom(fidelities)
-        THEN
-            ff := fidelities(uu)
         END
     
 END

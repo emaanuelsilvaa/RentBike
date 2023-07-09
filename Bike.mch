@@ -1,21 +1,14 @@
 MACHINE Bike
-
-CONSTANTS
-    minimun_helth,
-    max_helth
-
-PROPERTIES
-    minimun_helth : NAT
-    & max_helth: NAT
-
-SETS
-    BIKES
+    
+SEES Bike_ctx
 
 VARIABLES 
     bikes, bikesHelth
 
 INVARIANT
     bikes <: BIKES
+    & bikes : FIN(bikes)
+    & card(bikes) <= sze
     & bikesHelth : bikes --> 0..max_helth
 
 INITIALISATION 
@@ -27,12 +20,13 @@ OPERATIONS
         PRE bb : BIKES 
             & bb /: bikes 
             & bb /: dom(bikesHelth)
+            & card(bikes) < sze
         THEN bikes := bikes \/ {bb}
             || bikesHelth := bikesHelth \/ {bb |-> max_helth}
         END;
 
     delete_bike(bb) =
-        PRE bb : bikes 
+        PRE bb : bikes & bb : BIKES 
         THEN bikes := bikes - {bb} 
             || bikesHelth := {bb} <<| bikesHelth
         END;
