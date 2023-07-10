@@ -1,18 +1,7 @@
 MACHINE 
     User
     
-CONSTANTS
-    credit_limit,
-    max_fidelity,
-    fidelity_increment
-    
-PROPERTIES
-    credit_limit : NAT    
-    & max_fidelity : NAT
-    & fidelity_increment : NAT
-    
-SETS
-    USERS
+SEES Context
         
 VARIABLES 
     users, credits, fidelities
