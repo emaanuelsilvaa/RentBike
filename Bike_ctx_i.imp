@@ -1,9 +1,0 @@
-IMPLEMENTATION Bike_ctx_i
-REFINES Bike_ctx
-   
-VALUES
-     minimun_helth = 90;
-     max_helth = 100;
-     sze = 10;
-     BIKES = 0 .. sze
- END

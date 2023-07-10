@@ -1,18 +1,15 @@
 IMPLEMENTATION Bike_i
 REFINES Bike
 
-SEES Bike_ctx
-
+SEES Context
 
 CONCRETE_VARIABLES 
     bikes_i, bikesHelth_i
      
 INVARIANT
     bikes_i : BIKES --> BOOL
-    & dom(bikes_i |> {TRUE}) = bikes 
+    & dom(bikes_i |> {TRUE}) = bikes
     & bikesHelth_i : BIKES --> 0..max_helth
-
-    
 
 INITIALISATION 
     
@@ -40,12 +37,10 @@ OPERATIONS
             bikesHelth_i(bb) := 0
         END;
 
-
     reset_helth(bb) =
         BEGIN
             bikesHelth_i(bb) := max_helth
         END;
-
 
     set_damage(bb, dm) =
         BEGIN
@@ -59,7 +54,6 @@ OPERATIONS
                 END
             END
         END;
-
     
     query_helth <-- get_helth(bb) =
         BEGIN 

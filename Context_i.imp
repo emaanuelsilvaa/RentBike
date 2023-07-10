@@ -1,0 +1,14 @@
+IMPLEMENTATION Context_i
+REFINES Context
+   
+VALUES
+     minimun_helth = 90;
+     max_helth = 100;
+     sze = 10;
+     BIKES = 0..sze;
+     credit_limit = 100;
+     max_fidelity = 4;
+     fidelity_increment = 1;
+     USERS = 0..sze
+     
+ END

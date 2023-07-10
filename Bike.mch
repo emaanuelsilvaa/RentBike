@@ -1,6 +1,6 @@
 MACHINE Bike
     
-SEES Bike_ctx
+SEES Context
 
 VARIABLES 
     bikes, bikesHelth
@@ -26,19 +26,19 @@ OPERATIONS
         END;
 
     delete_bike(bb) =
-        PRE bb : bikes & bb : BIKES 
+        PRE bb : BIKES & bb : bikes
         THEN bikes := bikes - {bb} 
             || bikesHelth := {bb} <<| bikesHelth
         END;
 
     reset_helth(bb) =
-        PRE bb : bikes
+        PRE bb : BIKES & bb : bikes
             & bb : dom(bikesHelth)
         THEN bikesHelth(bb) := max_helth
         END;
 
     set_damage(bb, dm) =
-        PRE bb : bikes
+        PRE  bb : BIKES & bb : bikes
             & bb : dom(bikesHelth)
             & dm : 0..max_helth
         THEN 
@@ -49,8 +49,8 @@ OPERATIONS
         END;
     
     query_helth <-- get_helth(bb) =
-        PRE 
-            bb : bikes
+        PRE bb : BIKES
+            & bb : bikes
             & bb : dom(bikesHelth)
         THEN
             query_helth := bikesHelth(bb)
