@@ -1,18 +1,7 @@
 MACHINE 
     User
     
-CONSTANTS
-    credit_limit,
-    max_fidelity,
-    fidelity_increment
-    
-PROPERTIES
-    credit_limit : NAT    
-    & max_fidelity : NAT
-    & fidelity_increment : NAT
-    
-SETS
-    USERS
+SEES Context
         
 VARIABLES 
     users, credits, fidelities
@@ -40,7 +29,8 @@ OPERATIONS
 
     delete_user(uu) = 
         PRE 
-            uu : users
+            uu : USERS
+            & uu : users
         THEN 
             users := users - {uu} 
             || fidelities := {uu} <<| fidelities
@@ -60,7 +50,8 @@ OPERATIONS
         END;
 
     remove_credit(uu, cc) =
-        PRE uu : users
+        PRE uu : USERS
+            & uu : users
             & uu : dom(credits)
             & cc : 1..credit_limit
             & credits(uu) - cc >= 0 
@@ -68,7 +59,8 @@ OPERATIONS
         END;
 
     rent(uu, cc) =
-        PRE uu : users
+        PRE uu : USERS
+            & uu : users
             & uu : dom(credits)
             & cc : 1..credit_limit
             & credits(uu) - cc >= 0 
@@ -79,28 +71,23 @@ OPERATIONS
         END;
         
     cc <-- get_credits(uu) =
-        PRE uu : users 
+        PRE uu : USERS
+            & uu : users 
             & uu : dom(credits)
         THEN cc := credits(uu)
-        END;    
+        END;
         
     increment_fidelify(uu) =
-        PRE uu : users 
+        PRE uu : USERS
+            & uu : users 
             & uu : dom(fidelities)
             & fidelities(uu) + fidelity_increment <= max_fidelity
         THEN fidelities(uu) := fidelities(uu) + fidelity_increment
         END;
         
     reset_fidelity(uu) =
-        PRE uu : users & uu : dom(fidelities)
+        PRE uu : USERS & uu : users & uu : dom(fidelities)
         THEN fidelities(uu) := 0
-        END;
-        
-    ff <-- get_fidelity(uu) =
-        PRE uu : users
-            & uu : dom(fidelities)
-        THEN
-            ff := fidelities(uu)
         END
     
 END

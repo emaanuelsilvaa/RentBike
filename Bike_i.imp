@@ -1,0 +1,62 @@
+IMPLEMENTATION Bike_i
+REFINES Bike
+
+SEES Context
+
+CONCRETE_VARIABLES 
+    bikes_i, bikesHelth_i
+     
+INVARIANT
+    bikes_i : BIKES --> BOOL
+    & dom(bikes_i |> {TRUE}) = bikes
+    & bikesHelth_i : BIKES --> 0..max_helth
+
+INITIALISATION 
+    VAR ii IN
+       ii := 0;
+       WHILE (ii <= sze) DO 
+           bikes_i(ii) := FALSE;
+           bikesHelth_i(ii) := 0;
+           ii := ii + 1
+       INVARIANT !nn . (nn:0..(ii-1) => (bikes_i(ii) = FALSE & bikesHelth_i(ii) = 0))
+       VARIANT (sze - ii)
+       END          
+   END
+
+OPERATIONS
+    create_bike(bb) = 
+        BEGIN
+            bikes_i(bb) := TRUE;
+            bikesHelth_i(bb) := max_helth
+        END;
+
+    delete_bike(bb) =
+        BEGIN
+            bikes_i(bb) := FALSE;
+            bikesHelth_i(bb) := 0
+        END;
+
+    reset_helth(bb) =
+        BEGIN
+            bikesHelth_i(bb) := max_helth
+        END;
+
+    set_damage(bb, dm) =
+        BEGIN
+            VAR bh, result IN 
+                bh := bikesHelth_i(bb);
+                result := bh - dm;
+                IF (result < 0)
+                THEN 
+                    bikesHelth_i(bb) := 0
+                ELSE bikesHelth_i(bb) := result
+                END
+            END
+        END;
+    
+    query_helth <-- get_helth(bb) =
+        BEGIN 
+            query_helth := bikesHelth_i(bb)
+        END
+
+ END

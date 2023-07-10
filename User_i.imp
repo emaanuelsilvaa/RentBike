@@ -1,0 +1,75 @@
+IMPLEMENTATION User_i
+REFINES User
+
+SEES Context
+
+CONCRETE_VARIABLES 
+    users_i, credits_i, fidelities_i
+
+INVARIANT
+    users_i : USERS --> BOOL
+    & dom(users_i |> {TRUE}) = users
+    & credits_i : USERS --> 0..credit_limit
+    & fidelities_i : USERS --> 0..max_fidelity
+
+INITIALISATION 
+    VAR ii IN
+       ii := 0;
+       WHILE (ii <= sze) DO 
+           users_i(ii) := FALSE;
+           credits_i(ii) := 0;
+           fidelities_i(ii) := 0;
+           ii := ii + 1
+       INVARIANT !nn . (nn:0..(ii-1) => (users_i(ii) = FALSE & credits_i(ii) = 0 & fidelities_i(ii) = 0))
+       VARIANT (sze - ii)
+       END          
+   END
+
+OPERATIONS
+    create_user(uu) = 
+        BEGIN
+            users_i(uu) := TRUE;
+            fidelities_i(uu) := 0;
+            credits_i(uu) := 0
+        END;
+
+    delete_user(uu) = 
+        BEGIN 
+            users_i(uu) := FALSE;
+            fidelities_i(uu) := 0;
+            credits_i(uu) := 0
+        END;
+
+    add_credit(uu, cc) =
+        BEGIN 
+            VAR nc IN
+                nc := cc + credits_i(uu);
+                IF (nc <= credit_limit) THEN
+                    credits_i(uu) := nc
+                ELSE 
+                    credits_i(uu) := credit_limit
+                END
+            END
+        END;
+
+    remove_credit(uu, cc) = 
+        BEGIN
+            VAR nc IN
+            nc := credits_i(uu);
+            credits_i(uu) := nc - cc
+            END
+        END;
+        
+    rent(uu, cc) =
+        BEGIN 
+            credits_i(uu) := credits_i(uu) - cc;
+            fidelities_i(uu) := fidelities_i(uu) + fidelity_increment
+        END;
+        
+    cc <-- get_credits(uu) = cc := credits_i(uu);
+
+    increment_fidelify(uu) =  fidelities_i(uu) := fidelities_i(uu) + fidelity_increment;
+        
+    reset_fidelity(uu) = fidelities_i(uu) := 0
+
+ END
