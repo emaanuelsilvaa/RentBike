@@ -28,7 +28,6 @@ void User__INITIALISATION(void)
             User__credits_i[ii] = 0;
             User__fidelities_i[ii] = 0;
             ii = ii+1;
-            printf("inserindo user\n");
         }
     }
      
