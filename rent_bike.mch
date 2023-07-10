@@ -59,25 +59,24 @@ OPERATIONS
             & uu : dom(fidelities)
             & uu /: dom(rentedBikes)
             & bb /: ran(rentedBikes)
+            & credits(uu) >= 2 * rent_value
         THEN
             IF
                fidelities(uu) < max_fidelity
-               & bikeDiscounts(bb) = 0
-               & credits(uu) >= 2 * rent_value // so deve ser possivel alugar alguma coisa se tiver 2x o rent_value
             THEN
-                rentedBikes := rentedBikes \/ {uu |-> bb} 
-                || rent(uu, rent_value)
-            ELSIF
-                fidelities(uu) < max_fidelity
-                & bb : dom(bikeDiscounts)
-                & credits(uu) + bikeDiscounts(bb) >= rent_value // TODO: Ajustar essa condicional para respeitar invariant de User
-            THEN 
-                rentedBikes := rentedBikes \/ {uu |-> bb} 
-                || rent(uu, rent_value - bikeDiscounts(bb)) 
-            ELSIF
-                fidelities(uu) = max_fidelity
-                & bb /: dom(bikeDiscounts)
-            THEN
+                IF bikeDiscounts(bb) = 0
+                THEN 
+                    rentedBikes := rentedBikes \/ {uu |-> bb} 
+                    || rent(uu, rent_value)
+                ELSIF bikeDiscounts(bb) > 0 
+                    & credits(uu) + bikeDiscounts(bb) >= rent_value
+                THEN 
+                    rentedBikes := rentedBikes \/ {uu |-> bb} 
+                    || rent(uu, rent_value - bikeDiscounts(bb)) 
+                ELSE
+                    skip
+                END
+            ELSE
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || reset_fidelity(uu)
             END
