@@ -1,87 +1,90 @@
-MACHINE 
-    rent_bike
+IMPLEMENTATION rent_bike_i
+REFINES rent_bike
 
 SEES Context
 
-INCLUDES 
-    User, Bike
-    
-PROMOTES 
-    create_user, add_credit, get_credits, get_helth
-    
-CONSTANTS
-    rent_value, max_discount
-    
-PROPERTIES
-    rent_value : NAT1
-    & max_discount : NAT1
-        
-VARIABLES 
-    rentedBikes, bikeDiscounts
+CONCRETE_VARIABLES 
+    rentedBikes_i, bikeDiscounts_i 
     
 INVARIANT
-    rentedBikes : users +-> bikes
-    & bikeDiscounts : bikes --> 0..max_discount
+    rentedBikes_i : USERS  +-> BIKES
+    & ran(rentedBikes_i) = bikes
+    & bikeDiscounts_i : BIKES --> 0..max_discount
+    & dom(bikeDiscounts_i) = bikes
     
-INITIALISATION 
-    rentedBikes := {}
-    || bikeDiscounts := bikes*{0}
+
+INITIALISATION
     
+    VAR ii IN
+       ii := 0;
+       WHILE (ii <= sze) DO 
+           rentedBikes_i(ii) := 0;
+           bikeDiscounts_i(ii) := 0;
+           ii := ii + 1
+       INVARIANT !nn . (nn:0..(ii-1) => (rentedBikes_i(ii) = 0 & bikeDiscounts_i(ii) = 0))
+       VARIANT (sze - ii)
+       END          
+   END
+    
+
 OPERATIONS
     remove_user(uu) =
-        PRE uu : users & uu /: dom(rentedBikes)
-        THEN delete_user(uu)
+        BEGIN
+            IF rentedBikes_i(uu) = 0
+            THEN
+                delete_user(uu)
+            END
         END;
 
     add_bike(bb) =
-        PRE bb : BIKES 
-            & bb /: bikes 
-            & bb /: dom(bikesHelth)
-            & bb /: dom(bikeDiscounts)
-        THEN create_bike(bb) 
-            || bikeDiscounts := bikeDiscounts \/ {bb |-> 0}
+        BEGIN
+            create_bike(bb)
         END;
 
     remove_bike(bb) =
-        PRE bb : BIKES
-            & bb : bikes 
-            & bb /: ran(rentedBikes)
-        THEN 
-            delete_bike(bb)
-            || bikeDiscounts := {bb} <<| bikeDiscounts
+        BEGIN
+            delete_bike(bb);
+            bikeDiscounts_i(bb) := 0
         END;
+
     
     rentBike(uu, bb) = 
-        PRE uu : users
-            & bb : bikes
-            & bb : dom(bikeDiscounts)
-            & uu : dom(credits) 
-            & uu : dom(fidelities)
-            & uu /: dom(rentedBikes)
-            & bb /: ran(rentedBikes)
+        PRE uu : users & bb : bikes
         THEN
-            IF
-               fidelities(uu) < max_fidelity
-               & bikeDiscounts(bb) = 0
+            IF uu : dom(credits)
+               & uu : dom(fidelities)
+               & fidelities(uu) < max_fidelity
+               & uu /: dom(rentedBikes)
+               & bb /: ran(rentedBikes)
+               & bb /: dom(bikeDiscounts)
                & credits(uu) >= 2 * rent_value // so deve ser possivel alugar alguma coisa se tiver 2x o rent_value
-            THEN
+               & (uu, bb) /: rentedBikes
+            THEN 
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || rent(uu, rent_value)
-            ELSIF
-                fidelities(uu) < max_fidelity
+            ELSIF 
+                uu : dom(credits)
+                & uu : dom(fidelities)
+                & fidelities(uu) < max_fidelity
+                & uu /: dom(rentedBikes)
+                & bb /: ran(rentedBikes)
                 & bb : dom(bikeDiscounts)
                 & credits(uu) + bikeDiscounts(bb) >= rent_value // TODO: Ajustar essa condicional para respeitar invariant de User
             THEN 
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || rent(uu, rent_value - bikeDiscounts(bb)) 
-            ELSIF
-                fidelities(uu) = max_fidelity
+            ELSIF 
+                uu : dom(fidelities)
+                & fidelities(uu) = max_fidelity
+                & uu /: dom(rentedBikes)
+                & bb /: ran(rentedBikes)
                 & bb /: dom(bikeDiscounts)
             THEN
                 rentedBikes := rentedBikes \/ {uu |-> bb} 
                 || reset_fidelity(uu)
             END
         END;
+
     
     return_bike(uu, bb) =
         PRE uu : users
@@ -102,6 +105,7 @@ OPERATIONS
             END
         END;
 
+
     evaluate_bike(bb, dm) =
         PRE bb : bikes
             & bb : dom(bikesHelth)
@@ -111,6 +115,7 @@ OPERATIONS
             set_damage(bb, dm)
         END;
 
+
     createDiscount(bb, disc) =
         PRE bb : bikes
             & disc : 1..max_discount
@@ -119,7 +124,5 @@ OPERATIONS
         THEN 
             bikeDiscounts(bb) := disc
         END
-     
-END
 
-
+ END
