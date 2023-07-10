@@ -16,10 +16,10 @@ PROPERTIES
     & max_helth: NAT
     & sze: NAT 
     & sze < MAXINT
-    & BIKES = 0..sze,
-    & credit_limit : NAT,
-    & max_fidelity : NAT,
-    & fidelity_increment : NAT,
+    & BIKES = 0..sze
+    & credit_limit : NAT
+    & max_fidelity : NAT
+    & fidelity_increment : NAT
     & USERS = 0..sze
 
 END
