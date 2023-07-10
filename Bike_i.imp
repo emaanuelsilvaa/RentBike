@@ -12,7 +12,6 @@ INVARIANT
     & bikesHelth_i : BIKES --> 0..max_helth
 
 INITIALISATION 
-    
     VAR ii IN
        ii := 0;
        WHILE (ii <= sze) DO 

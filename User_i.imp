@@ -1,95 +1,75 @@
-/* User_i
- * Author: daniel.oliveira
- * Creation date: 09/07/23
- */
-
 IMPLEMENTATION User_i
 REFINES User
 
-VARIABLES 
-    users_r, credits, fidelities
+SEES Context
 
-INITIALISATION 
-    users_r := {}
-    || credits := {}
-    || fidelities := {}
+CONCRETE_VARIABLES 
+    users_i, credits_i, fidelities_i
 
 INVARIANT
-    users_r : USERS
+    users_i : USERS --> BOOL
+    & dom(users_i |> {TRUE}) = users
+    & credits_i : USERS --> 0..credit_limit
+    & fidelities_i : USERS --> 0..max_fidelity
+
+INITIALISATION 
+    VAR ii IN
+       ii := 0;
+       WHILE (ii <= sze) DO 
+           users_i(ii) := FALSE;
+           credits_i(ii) := 0;
+           fidelities_i(ii) := 0;
+           ii := ii + 1
+       INVARIANT !nn . (nn:0..(ii-1) => (users_i(ii) = FALSE & credits_i(ii) = 0 & fidelities_i(ii) = 0))
+       VARIANT (sze - ii)
+       END          
+   END
+
 OPERATIONS
     create_user(uu) = 
-        BEGIN uu : USERS 
-            & uu /: users 
-            & uu /: dom(fidelities)
-            & uu /: dom(credits)
-        THEN users := users \/ {uu} 
-            || fidelities := fidelities \/ {uu |-> 0} 
-            || credits := credits \/ {uu |-> 0}
+        BEGIN
+            users_i(uu) := TRUE;
+            fidelities_i(uu) := 0;
+            credits_i(uu) := 0
         END;
-
 
     delete_user(uu) = 
-        PRE 
-            uu : users
-        THEN 
-            users := users - {uu} 
-            || fidelities := {uu} <<| fidelities
-            || credits := {uu} <<| credits
+        BEGIN 
+            users_i(uu) := FALSE;
+            fidelities_i(uu) := 0;
+            credits_i(uu) := 0
         END;
 
-
     add_credit(uu, cc) =
-        PRE uu : USERS
-            & uu : users 
-            & cc : 1..credit_limit
-        THEN
-            IF uu : dom(credits) & cc + credits(uu) <= credit_limit
-            THEN credits := credits  <+ {uu |-> cc + credits(uu)}
-            ELSIF uu /: dom(credits)
-            THEN credits := credits \/ {uu |-> cc}
+        BEGIN 
+            VAR nc IN
+                nc := cc + credits_i(uu);
+                IF (nc <= credit_limit) THEN
+                    credits_i(uu) := nc
+                ELSE 
+                    credits_i(uu) := credit_limit
+                END
             END
         END;
 
-
-    remove_credit(uu, cc) =
-        PRE uu : users
-            & uu : dom(credits)
-            & cc : 1..credit_limit
-            & credits(uu) - cc >= 0 
-        THEN credits(uu) := credits(uu) - cc
+    remove_credit(uu, cc) = 
+        BEGIN
+            VAR nc IN
+            nc := credits_i(uu);
+            credits_i(uu) := nc - cc
+            END
         END;
-
-
+        
     rent(uu, cc) =
-        PRE uu : users
-            & uu : dom(credits)
-            & cc : 1..credit_limit
-            & credits(uu) - cc >= 0 
-            & uu : dom(fidelities)
-            & fidelities(uu) + fidelity_increment <= max_fidelity
-        THEN credits(uu) := credits(uu) - cc
-            || fidelities(uu) := fidelities(uu) + fidelity_increment
+        BEGIN 
+            credits_i(uu) := credits_i(uu) - cc;
+            fidelities_i(uu) := fidelities_i(uu) + fidelity_increment
         END;
-
         
-    cc <-- get_credits(uu) =
-        PRE uu : users 
-            & uu : dom(credits)
-        THEN cc := credits(uu)
-        END;
+    cc <-- get_credits(uu) = cc := credits_i(uu);
 
+    increment_fidelify(uu) =  fidelities_i(uu) := fidelities_i(uu) + fidelity_increment;
         
-    increment_fidelify(uu) =
-        PRE uu : users 
-            & uu : dom(fidelities)
-            & fidelities(uu) + fidelity_increment <= max_fidelity
-        THEN fidelities(uu) := fidelities(uu) + fidelity_increment
-        END;
-
-        
-    reset_fidelity(uu) =
-        PRE uu : users & uu : dom(fidelities)
-        THEN fidelities(uu) := 0
-        END
+    reset_fidelity(uu) = fidelities_i(uu) := 0
 
  END
